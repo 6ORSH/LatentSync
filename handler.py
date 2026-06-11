@@ -34,14 +34,16 @@ def _load_pipeline():
 
     scheduler = DDIMScheduler.from_pretrained("configs")
 
-    whisper_path = (
-        "checkpoints/whisper/small.pt"
+    # Use model name instead of path; Audio2Feature will auto-download if needed
+    whisper_model_name = (
+        "small"
         if _config.model.cross_attention_dim == 768
-        else "checkpoints/whisper/tiny.pt"
+        else "tiny"
     )
 
+    os.makedirs("checkpoints/whisper", exist_ok=True)
     audio_encoder = Audio2Feature(
-        model_path=whisper_path,
+        model_path=whisper_model_name,
         device="cuda",
         num_frames=_config.data.num_frames,
         audio_feat_length=_config.data.audio_feat_length,
