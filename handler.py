@@ -94,6 +94,12 @@ def handler(job):
     if not video_url or not audio_url:
         return {"error": "video_url and audio_url are required"}
 
+    if not os.path.exists(CKPT_PATH):
+        return {
+            "error": f"Checkpoint not found at {CKPT_PATH}. "
+            "Mount it via RunPod Network Volume or set CKPT_PATH env var to the absolute path."
+        }
+
     guidance_scale = float(inp.get("guidance_scale", 2.0))
     inference_steps = int(inp.get("inference_steps", 20))
     seed = int(inp.get("seed", 0))
@@ -136,8 +142,5 @@ def handler(job):
             if p and os.path.exists(p):
                 os.remove(p)
 
-
-# Warm the pipeline before the worker accepts any jobs
-_load_pipeline()
 
 runpod.serverless.start({"handler": handler})

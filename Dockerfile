@@ -25,11 +25,21 @@ RUN python -c "from diffusers import AutoencoderKL; AutoencoderKL.from_pretraine
 
 COPY . .
 
-# If checkpoints live on a RunPod Network Volume they will be mounted at
-# /runpod-volume/checkpoints — override the defaults via env vars:
-#   CKPT_PATH=/runpod-volume/checkpoints/latentsync_unet.pt
-#   UNET_CONFIG_PATH=/runpod-volume/configs/unet/stage2.yaml
+# IMPORTANT: Model checkpoints are not included in the Docker image (too large).
+# You MUST provide them at runtime:
 #
-# Otherwise bake them in by placing them under checkpoints/ before building.
+# Option 1: RunPod Network Volume (recommended)
+#   - Upload checkpoints to a RunPod Network Volume
+#   - Mount at /runpod-volume in the template
+#   - Set env vars in the template:
+#     CKPT_PATH=/runpod-volume/checkpoints/latentsync_unet.pt
+#     UNET_CONFIG_PATH=/runpod-volume/configs/unet/stage2.yaml
+#
+# Option 2: Custom path
+#   - Mount your volume at any path
+#   - Set CKPT_PATH to the absolute path, e.g. /mnt/models/latentsync_unet.pt
+#
+# If checkpoints are missing, jobs will fail with a helpful error message
+# instead of crashing the worker (which is the correct serverless behavior).
 
 CMD ["python", "handler.py"]
