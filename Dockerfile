@@ -7,6 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN apt-get update && apt-get install -y --no-install-recommends \
         python3.10 python3.10-dev python3-pip \
         ffmpeg libgl1 libglib2.0-0 libsm6 libxext6 \
+        build-essential git pkg-config libssl-dev \
     && rm -rf /var/lib/apt/lists/* \
     && ln -sf /usr/bin/python3.10 /usr/bin/python3 \
     && ln -sf /usr/bin/python3 /usr/bin/python \
@@ -16,11 +17,11 @@ WORKDIR /app
 
 # Install Python deps before copying source so this layer is cached on code changes
 COPY requirements.txt .
-RUN pip install --no-cache-dir runpod requests \
-    && pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --default-timeout=100 runpod requests \
+    && pip install --no-cache-dir --default-timeout=100 -r requirements.txt
 
 # Pre-download the HuggingFace VAE so cold starts don't need network for it
-RUN python -c "from diffusers import AutoencoderKL; AutoencoderKL.from_pretrained('stabilityai/sd-vae-ft-mse')"
+RUN python -c "from diffusers import AutoencoderKL; AutoencoderKL.from_pretrained('stabilityai/sd-vae-ft-mse')" || true
 
 COPY . .
 
